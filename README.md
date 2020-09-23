@@ -57,10 +57,11 @@ The application is now runnable using `java -jar target/quarkus-cafe-customermoc
 
 ## Creating a native executable
 
-You can create a native executable using: `./mvnw package -Pnative`.
-
-Or you can use Docker to build the native executable using: `./mvnw package -Pnative -Dquarkus.native.container-build=true`.
-
-You can then execute your binary: `./target/quarkus-cafe-customermock-1.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/building-native-image-guide .
+```shell
+export REST_URL=http://localhost:8080/order
+./mvnw clean package -Pnative -Dquarkus.native.container-build=true
+docker build -f src/main/docker/Dockerfile.native -t <<DOCKER_HUB_ID>>/quarkuscoffeeshop-customermocker .
+docker run -i --network="host" -e REST_URL=${REST_URL} <<DOCKER_ID>>quarkuscoffeeshop-customermocker:latest
+docker images -a | grep customermocker
+docker tag <<RESULT>> <<DOCKER_HUB_ID>>/quarkuscoffeeshop-customermocker:<<VERSION>>
+```
