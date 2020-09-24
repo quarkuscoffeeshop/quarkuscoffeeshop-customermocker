@@ -66,7 +66,7 @@ public class ApiResource {
     }
 
     @POST
-    @Path("/moderate")
+    @Path("/busy")
     public Response setVolumeToBusy() {
         logger.info("setting volume to Busy");
         customerMocker.setToBusy();

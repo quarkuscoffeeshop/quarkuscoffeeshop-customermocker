@@ -8,8 +8,39 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 Quarkus' configuration can be environment specific: https://quarkus.io/guides/config
 
-This service uses the following environment variables when running with the production profile:
+This service uses the following environment variables when running:
 * REST_URL
+
+This can be set for local development with:
+```shell script
+export REST_URL=http://localhost:8080/order
+```
+
+## Running in dev mode
+```shell script
+export REST_URL=http://localhost:8080
+./mvnw clean compile quarkus:dev
+```
+
+## Compiling and running native binary
+
+Obviously you need to swap your Docker (or other repository) id for <<DOCKER_HUB_ID>>
+```shell script
+export REST_URL=http://localhost:8080/order
+./mvnw clean package -Pnative -Dquarkus.native.container-build=true
+docker build -f src/main/docker/Dockerfile.native -t <<DOCKER_HUB_ID>>/quarkuscoffeeshop-customermocker .
+docker run -i --network="host" -e REST_URL=${REST_URL} <<DOCKER_HUB_ID>>quarkuscoffeeshop-customermocker:latest
+```
+
+## Pushing to a container registry
+
+After building and running the container (see above) you can find image with grep, tag it, and push it with:
+```shell script
+docker images -a | grep customermocker
+docker tag <<RESULT>> <<DOCKER_HUB_ID>>/quarkuscoffeeshop-customermocker:<<VERSION>>
+docker push <<DOCKER_HUB_ID>>/quarkuscoffeeshop-customermocker:<<VERSION>>
+```
+
 
 ## OpenShift Deployment 
 **Deploy quarkus-cafe-customermock on OpenShift**
