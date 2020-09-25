@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +26,8 @@ public class CustomerMocker {
 
     private boolean running;
 
+    int counter;
+
     CustomerVolume customerVolume = CustomerVolume.SLOW;
 
     Runnable sendMockOrders = () -> {
@@ -38,7 +37,7 @@ public class CustomerMocker {
             try {
                 Thread.sleep(customerVolume.getDelay() * 1000);
                 int orders = new Random().nextInt(4);
-                List<OrderInCommand> mockOrders = mockCustomerOrders(orders);
+                List<OrderPlacedEvent> mockOrders = mockCustomerOrders(orders);
                 logger.debug("placing orders");
                 mockOrders.forEach(mockOrder -> {
                     restService.placeOrders(mockOrder);
@@ -60,17 +59,29 @@ public class CustomerMocker {
         logger.debug("CustomerMocker now stopped");
     }
 
-    public List<OrderInCommand> mockCustomerOrders(int desiredNumberOfOrders) {
+    public List<OrderPlacedEvent> mockCustomerOrders(int desiredNumberOfOrders) {
 
         return Stream.generate(() -> {
-            OrderInCommand createOrderCommand = new OrderInCommand();
-            createOrderCommand.id = UUID.randomUUID().toString();
-            createOrderCommand.beverages = createBeverages();
-            // not all orders have kitchen items
-            if (desiredNumberOfOrders % 2 == 0) {
-                createOrderCommand.kitchenOrders = createKitchenItems();
+            if (counter == 100) {
+                logger.debug("sending a remake");
+                OrderPlacedEvent orderPlacedEvent = new OrderPlacedEvent();
+                orderPlacedEvent.id = UUID.randomUUID().toString();
+                orderPlacedEvent.setOrderSource(OrderSource.REMAKE);
+                orderPlacedEvent.setBeverages(Arrays.asList(new LineItem(Item.CAPPUCCINO, "Lemmy")));
+                return orderPlacedEvent;
+            }else{
+                OrderPlacedEvent orderPlacedEvent = new OrderPlacedEvent();
+                orderPlacedEvent.id = UUID.randomUUID().toString();
+                orderPlacedEvent.setOrderSource(OrderSource.WEB);
+                orderPlacedEvent.beverages = createBeverages();
+                // not all orders have kitchen items
+                if (desiredNumberOfOrders % 2 == 0) {
+                    orderPlacedEvent.kitchenOrders = createKitchenItems();
+                }
+                counter += orderPlacedEvent.getBeverages().size() + orderPlacedEvent.getKitchenOrders().size();
+                logger.debug("current order count: {}", counter);
+                return orderPlacedEvent;
             }
-            return createOrderCommand;
         }).limit(desiredNumberOfOrders).collect(Collectors.toList());
     }
 

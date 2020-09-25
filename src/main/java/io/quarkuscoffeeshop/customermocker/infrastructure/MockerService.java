@@ -20,8 +20,8 @@ public class MockerService {
     @RestClient
     RESTService RESTService;
 
-    public void placeOrders(OrderInCommand orderInCommand) {
-        RESTService.placeOrders(orderInCommand);
+    public void placeOrders(OrderPlacedEvent orderPlacedEvent) {
+        RESTService.placeOrders(orderPlacedEvent);
     }
 
 }

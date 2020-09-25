@@ -1,8 +1,7 @@
 package io.quarkuscoffeeshop.customermocker.domain;
 
-import io.quarkuscoffeeshop.domain.OrderInCommand;
+import io.quarkuscoffeeshop.domain.OrderPlacedEvent;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkuscoffeeshop.customermocker.domain.CustomerMocker;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
@@ -24,7 +23,7 @@ public class MockerServiceTest {
     @Test
     public void testCustomerMocker() {
 
-        List<OrderInCommand> createOrderCommands = customerMocker.mockCustomerOrders(15);
+        List<OrderPlacedEvent> createOrderCommands = customerMocker.mockCustomerOrders(15);
         assertEquals(15, createOrderCommands.size());
 
         createOrderCommands.forEach(createOrderCommand -> {
