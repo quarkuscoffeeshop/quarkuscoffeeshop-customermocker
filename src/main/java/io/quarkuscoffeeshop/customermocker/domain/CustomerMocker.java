@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class CustomerMocker {
             try {
                 Thread.sleep(customerVolume.getDelay() * 1000);
                 int orders = new Random().nextInt(4);
-                List<OrderPlacedEvent> mockOrders = mockCustomerOrders(orders);
+                List<PlaceOrderCommand> mockOrders = mockCustomerOrders(orders);
                 logger.debug("placing orders");
                 mockOrders.forEach(mockOrder -> {
                     restService.placeOrders(mockOrder);
@@ -59,44 +60,54 @@ public class CustomerMocker {
         logger.debug("CustomerMocker now stopped");
     }
 
-    public List<OrderPlacedEvent> mockCustomerOrders(int desiredNumberOfOrders) {
+    public List<PlaceOrderCommand> mockCustomerOrders(int desiredNumberOfOrders) {
 
         return Stream.generate(() -> {
+            PlaceOrderCommand placeOrderCommand;
             if (counter == 100) {
                 logger.debug("sending a remake");
-                OrderPlacedEvent orderPlacedEvent = new OrderPlacedEvent();
-                orderPlacedEvent.id = UUID.randomUUID().toString();
-                orderPlacedEvent.setOrderSource(OrderSource.REMAKE);
-                orderPlacedEvent.setBeverages(Arrays.asList(new LineItem(Item.CAPPUCCINO, "Lemmy")));
-                return orderPlacedEvent;
+                placeOrderCommand = new PlaceOrderCommand(
+                    OrderSource.WEB,
+                        Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
+                    null,
+                    BigDecimal.valueOf(3.50)
+                );
             }else{
-                OrderPlacedEvent orderPlacedEvent = new OrderPlacedEvent();
-                orderPlacedEvent.id = UUID.randomUUID().toString();
-                orderPlacedEvent.setOrderSource(OrderSource.WEB);
-                orderPlacedEvent.beverages = createBeverages();
+                placeOrderCommand = new PlaceOrderCommand(
+                        OrderSource.WEB,
+                        Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
+                        null,
+                        BigDecimal.valueOf(3.50)
+                );
                 // not all orders have kitchen items
                 if (desiredNumberOfOrders % 2 == 0) {
-                    orderPlacedEvent.kitchenOrders = createKitchenItems();
+                    placeOrderCommand.getKitchenItems().get().addAll(createKitchenItems());
                 }
-                counter += orderPlacedEvent.getBeverages().size() + orderPlacedEvent.getKitchenOrders().size();
+                if(placeOrderCommand.getBaristaItems().isPresent()){
+                    counter += placeOrderCommand.getBaristaItems().get().size();
+                }
+                if(placeOrderCommand.getKitchenItems().isPresent()){
+                    counter += placeOrderCommand.getKitchenItems().get().size();
+                }
                 logger.debug("current order count: {}", counter);
-                return orderPlacedEvent;
+                return placeOrderCommand;
             }
+            return placeOrderCommand;
         }).limit(desiredNumberOfOrders).collect(Collectors.toList());
     }
 
-    private List<LineItem> createBeverages() {
+    private Collection<OrderLineItem> createBeverages() {
 
-        List<LineItem> beverages = new ArrayList(2);
-        beverages.add(new LineItem(randomBaristaItem(), randomCustomerName()));
-        beverages.add(new LineItem(randomBaristaItem(), randomCustomerName()));
+        List<OrderLineItem> beverages = new ArrayList(2);
+        beverages.add(new OrderLineItem(randomBaristaItem(), BigDecimal.valueOf(4.0), randomCustomerName()));
+        beverages.add(new OrderLineItem(randomBaristaItem(), BigDecimal.valueOf(3.5),randomCustomerName()));
         return beverages;
     }
 
-    private List<LineItem> createKitchenItems() {
-        List<LineItem> kitchenOrders = new ArrayList(2);
-        kitchenOrders.add(new LineItem(randomKitchenItem(), randomCustomerName()));
-        kitchenOrders.add(new LineItem(randomKitchenItem(), randomCustomerName()));
+    private Collection<OrderLineItem> createKitchenItems() {
+        List<OrderLineItem> kitchenOrders = new ArrayList(2);
+        kitchenOrders.add(new OrderLineItem(randomKitchenItem(), BigDecimal.valueOf(3.75), randomCustomerName()));
+        kitchenOrders.add(new OrderLineItem(randomKitchenItem(), BigDecimal.valueOf(3.5), randomCustomerName()));
         return kitchenOrders;
     }
 
