@@ -39,16 +39,37 @@ public class CustomerMocker {
                 Thread.sleep(customerVolume.getDelay() * 1000);
                 int orders = new Random().nextInt(4);
                 List<PlaceOrderCommand> mockOrders = mockCustomerOrders(orders);
-                logger.debug("placing orders");
-                mockOrders.forEach(mockOrder -> {
-                    restService.placeOrders(mockOrder);
-                    logger.debug("placed order: {}", toJson(mockOrder));
-                });
+                placeOrders(mockOrders).join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     };
+
+    CompletableFuture<Void> placeOrders(final List<PlaceOrderCommand> orders) {
+
+        Collection<CompletableFuture<Void>> futures = new ArrayList<>(orders.size());
+        orders.forEach(placeOrderCommand ->{
+            futures.add(placeOrder(placeOrderCommand));
+        });
+
+        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+                .exceptionally(e -> {
+                    logger.error(e.getMessage());
+                    return null;
+                });
+    }
+
+    CompletableFuture<Void> placeOrder(final PlaceOrderCommand placeOrderCommand) {
+        return restService.placeOrders(placeOrderCommand)
+                .exceptionally(e -> {
+                    logger.error(e.getMessage());
+                    return null;
+                }).toCompletableFuture().thenApply(s -> {
+                    logger.debug("sent {}", placeOrderCommand);
+                    return null;
+                });
+    }
 
     public CompletableFuture<Void> start() {
         this.running = true;

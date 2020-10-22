@@ -26,7 +26,7 @@ export REST_URL=http://localhost:8080
 
 Obviously you need to swap your Docker (or other repository) id for <<DOCKER_HUB_ID>>
 ```shell script
-export REST_URL=http://localhost:8080/order
+export REST_URL=http://localhost:8080
 ./mvnw clean package -Pnative -Dquarkus.native.container-build=true
 docker build -f src/main/docker/Dockerfile.native -t <<DOCKER_HUB_ID>>/quarkuscoffeeshop-customermocker .
 docker run -i --network="host" -e REST_URL=${REST_URL} <<DOCKER_HUB_ID>>quarkuscoffeeshop-customermocker:latest
