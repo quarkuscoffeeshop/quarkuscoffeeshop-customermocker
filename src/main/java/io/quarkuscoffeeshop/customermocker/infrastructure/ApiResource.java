@@ -1,6 +1,5 @@
 package io.quarkuscoffeeshop.customermocker.infrastructure;
 
-import io.quarkuscoffeeshop.customermocker.domain.CustomerMocker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +15,13 @@ public class ApiResource {
     final Logger logger = LoggerFactory.getLogger(ApiResource.class);
 
     @Inject
-    CustomerMocker customerMocker;
+    MockerService mockerService;
 
     @POST
     @Path("/start")
     public Response startMocking() {
         logger.info("starting");
-        customerMocker.start();
+        mockerService.start();
         return Response.ok().build();
     }
 
@@ -30,22 +29,22 @@ public class ApiResource {
     @Path("/stop")
     public Response stopMocking() {
         logger.info("stopping");
-        customerMocker.stop();
+        mockerService.stop();
         return Response.ok().build();
     }
 
     @GET
     @Path("/running")
     public Response isRunning() {
-        logger.info("returning status {}", customerMocker.isRunning());
-        return Response.ok(customerMocker.isRunning()).build();
+        logger.info("returning status {}", mockerService.isRunning());
+        return Response.ok(mockerService.isRunning()).build();
     }
 
     @POST
     @Path("/dev")
     public Response setVolumeToDev() {
         logger.info("setting volume to Dev");
-        customerMocker.setToDev();
+        mockerService.setToDev();
         return Response.ok().build();
     }
 
@@ -53,7 +52,7 @@ public class ApiResource {
     @Path("/slow")
     public Response setVolumeToSlow() {
         logger.info("setting volume to Slow");
-        customerMocker.setToSlow();
+        mockerService.setToSlow();
         return Response.ok().build();
     }
 
@@ -61,7 +60,7 @@ public class ApiResource {
     @Path("/moderate")
     public Response setVolumeToModerate() {
         logger.info("setting volume to Moderate");
-        customerMocker.setToModerate();
+        mockerService.setToModerate();
         return Response.ok().build();
     }
 
@@ -69,7 +68,7 @@ public class ApiResource {
     @Path("/busy")
     public Response setVolumeToBusy() {
         logger.info("setting volume to Busy");
-        customerMocker.setToBusy();
+        mockerService.setToBusy();
         return Response.ok().build();
     }
 
@@ -77,7 +76,7 @@ public class ApiResource {
     @Path("/weeds")
     public Response setVolumeToWeeds() {
         logger.info("setting volume to Weeds");
-        customerMocker.setToWeeds();
+        mockerService.setToWeeds();
         return Response.ok().build();
     }
 }

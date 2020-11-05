@@ -19,15 +19,16 @@ import static io.quarkuscoffeeshop.customermocker.domain.JsonUtil.toJson;
 @ApplicationScoped
 public class CustomerMocker {
 
-    final Logger logger = LoggerFactory.getLogger(CustomerMocker.class);
+    static final Logger logger = LoggerFactory.getLogger(CustomerMocker.class);
 
+    static int counter;
+/*
     @Inject
     @RestClient
     RESTService restService;
 
     private boolean running;
 
-    int counter;
 
     CustomerVolume customerVolume = CustomerVolume.SLOW;
 
@@ -39,6 +40,10 @@ public class CustomerMocker {
                 Thread.sleep(customerVolume.getDelay() * 1000);
                 int orders = new Random().nextInt(4);
                 List<PlaceOrderCommand> mockOrders = mockCustomerOrders(orders);
+                logger.debug("placing {} orders", mockOrders.size());
+                mockOrders.forEach(mockOrder -> {
+                    logger.debug(mockOrder.toString());
+                });
                 placeOrders(mockOrders).join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -81,7 +86,8 @@ public class CustomerMocker {
         logger.debug("CustomerMocker now stopped");
     }
 
-    public List<PlaceOrderCommand> mockCustomerOrders(int desiredNumberOfOrders) {
+*/
+    public static List<PlaceOrderCommand> mockCustomerOrders(final int desiredNumberOfOrders) {
 
         return Stream.generate(() -> {
             PlaceOrderCommand placeOrderCommand;
@@ -89,13 +95,15 @@ public class CustomerMocker {
                 logger.debug("sending a remake");
                 placeOrderCommand = new PlaceOrderCommand(
                     OrderSource.WEB,
-                        Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
+                    null,
+                    Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
                     null,
                     BigDecimal.valueOf(3.50)
                 );
             }else{
                 placeOrderCommand = new PlaceOrderCommand(
                         OrderSource.WEB,
+                        null,
                         Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
                         null,
                         BigDecimal.valueOf(3.50)
@@ -117,7 +125,7 @@ public class CustomerMocker {
         }).limit(desiredNumberOfOrders).collect(Collectors.toList());
     }
 
-    private Collection<OrderLineItem> createBeverages() {
+    private static Collection<OrderLineItem> createBeverages() {
 
         List<OrderLineItem> beverages = new ArrayList(2);
         beverages.add(new OrderLineItem(randomBaristaItem(), BigDecimal.valueOf(4.0), randomCustomerName()));
@@ -125,49 +133,23 @@ public class CustomerMocker {
         return beverages;
     }
 
-    private Collection<OrderLineItem> createKitchenItems() {
+    private static Collection<OrderLineItem> createKitchenItems() {
         List<OrderLineItem> kitchenOrders = new ArrayList(2);
         kitchenOrders.add(new OrderLineItem(randomKitchenItem(), BigDecimal.valueOf(3.75), randomCustomerName()));
         kitchenOrders.add(new OrderLineItem(randomKitchenItem(), BigDecimal.valueOf(3.5), randomCustomerName()));
         return kitchenOrders;
     }
 
-    Item randomBaristaItem() {
+    static Item randomBaristaItem() {
         return Item.values()[new Random().nextInt(5)];
     }
 
-    Item randomKitchenItem() {
+    static Item randomKitchenItem() {
         return Item.values()[new Random().nextInt(3) + 5];
     }
 
-    String randomCustomerName() {
+    static String randomCustomerName() {
         return CustomerNames.randomName();
     }
-
-    public void setToDev() {
-        this.customerVolume = CustomerVolume.DEV;
-    }
-
-    public void setToSlow() {
-        this.customerVolume = CustomerVolume.SLOW;
-    }
-
-    public void setToModerate() {
-        this.customerVolume = CustomerVolume.MODERATE;
-    }
-
-    public void setToBusy() {
-        this.customerVolume = CustomerVolume.BUSY;
-    }
-
-    public void setToWeeds() {
-        this.customerVolume = CustomerVolume.WEEDS;
-    }
-
-    //--------------------------------------------------
-    public boolean isRunning() {
-        return running;
-    }
-
 
 }
