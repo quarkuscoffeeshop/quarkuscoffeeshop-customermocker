@@ -4,9 +4,9 @@ public enum CustomerVolume {
 
     DEAD(120), DEV(5), SLOW(20), MODERATE(45), BUSY(30), WEEDS(10);
 
-    private int delay;
+    private final int delay;
 
-    private CustomerVolume(int delayTime) {
+    CustomerVolume(int delayTime) {
         this.delay = delayTime;
     }
 
