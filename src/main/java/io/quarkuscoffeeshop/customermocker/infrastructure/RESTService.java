@@ -1,7 +1,6 @@
 package io.quarkuscoffeeshop.customermocker.infrastructure;
 
-import io.quarkuscoffeeshop.domain.OrderPlacedEvent;
-import io.quarkuscoffeeshop.domain.PlaceOrderCommand;
+import io.quarkuscoffeeshop.customermocker.domain.PlaceOrderCommand;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 import javax.ws.rs.POST;

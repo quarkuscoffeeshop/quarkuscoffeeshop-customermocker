@@ -1,9 +1,13 @@
 package io.quarkuscoffeeshop.customermocker.domain;
 
+import com.github.javafaker.Faker;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class CustomerNames {
+
+    static Faker faker = new Faker();
 
     static final List<String> names = Arrays.asList(
             "Chidambaram C",
@@ -111,9 +115,10 @@ public class CustomerNames {
             throw new RuntimeException("try a smaller number");
         }
 
+
         return new Random()
                 .ints(desiredNumberOfNames, 0, names.size())
-                .mapToObj(i -> names.get(i))
+                .mapToObj(i -> faker.name().firstName())
                 .collect(Collectors.toList());
     }
 

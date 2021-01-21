@@ -1,20 +1,13 @@
 package io.quarkuscoffeeshop.customermocker.domain;
 
-import io.quarkuscoffeeshop.domain.*;
-import io.quarkuscoffeeshop.customermocker.infrastructure.RESTService;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static io.quarkuscoffeeshop.customermocker.domain.JsonUtil.toJson;
 
 @ApplicationScoped
 public class CustomerMocker {
@@ -22,71 +15,72 @@ public class CustomerMocker {
     static final Logger logger = LoggerFactory.getLogger(CustomerMocker.class);
 
     static int counter;
-/*
-    @Inject
-    @RestClient
-    RESTService restService;
 
-    private boolean running;
+    /*
+        @Inject
+        @RestClient
+        RESTService restService;
+
+        private boolean running;
 
 
-    CustomerVolume customerVolume = CustomerVolume.SLOW;
+        CustomerVolume customerVolume = CustomerVolume.SLOW;
 
-    Runnable sendMockOrders = () -> {
-        logger.debug("CustomerMocker now running");
+        Runnable sendMockOrders = () -> {
+            logger.debug("CustomerMocker now running");
 
-        while (running) {
-            try {
-                Thread.sleep(customerVolume.getDelay() * 1000);
-                int orders = new Random().nextInt(4);
-                List<PlaceOrderCommand> mockOrders = mockCustomerOrders(orders);
-                logger.debug("placing {} orders", mockOrders.size());
-                mockOrders.forEach(mockOrder -> {
-                    logger.debug(mockOrder.toString());
-                });
-                placeOrders(mockOrders).join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            while (running) {
+                try {
+                    Thread.sleep(customerVolume.getDelay() * 1000);
+                    int orders = new Random().nextInt(4);
+                    List<PlaceOrderCommand> mockOrders = mockCustomerOrders(orders);
+                    logger.debug("placing {} orders", mockOrders.size());
+                    mockOrders.forEach(mockOrder -> {
+                        logger.debug(mockOrder.toString());
+                    });
+                    placeOrders(mockOrders).join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+        };
+
+        CompletableFuture<Void> placeOrders(final List<PlaceOrderCommand> orders) {
+
+            Collection<CompletableFuture<Void>> futures = new ArrayList<>(orders.size());
+            orders.forEach(placeOrderCommand ->{
+                futures.add(placeOrder(placeOrderCommand));
+            });
+
+            return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+                    .exceptionally(e -> {
+                        logger.error(e.getMessage());
+                        return null;
+                    });
         }
-    };
 
-    CompletableFuture<Void> placeOrders(final List<PlaceOrderCommand> orders) {
+        CompletableFuture<Void> placeOrder(final PlaceOrderCommand placeOrderCommand) {
+            return restService.placeOrders(placeOrderCommand)
+                    .exceptionally(e -> {
+                        logger.error(e.getMessage());
+                        return null;
+                    }).toCompletableFuture().thenApply(s -> {
+                        logger.debug("sent {}", placeOrderCommand);
+                        return null;
+                    });
+        }
 
-        Collection<CompletableFuture<Void>> futures = new ArrayList<>(orders.size());
-        orders.forEach(placeOrderCommand ->{
-            futures.add(placeOrder(placeOrderCommand));
-        });
+        public CompletableFuture<Void> start() {
+            this.running = true;
+            return CompletableFuture.runAsync(sendMockOrders);
+        }
 
-        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
-                .exceptionally(e -> {
-                    logger.error(e.getMessage());
-                    return null;
-                });
-    }
+        public void stop() {
+            this.running = false;
+            logger.debug("CustomerMocker now stopped");
+        }
 
-    CompletableFuture<Void> placeOrder(final PlaceOrderCommand placeOrderCommand) {
-        return restService.placeOrders(placeOrderCommand)
-                .exceptionally(e -> {
-                    logger.error(e.getMessage());
-                    return null;
-                }).toCompletableFuture().thenApply(s -> {
-                    logger.debug("sent {}", placeOrderCommand);
-                    return null;
-                });
-    }
-
-    public CompletableFuture<Void> start() {
-        this.running = true;
-        return CompletableFuture.runAsync(sendMockOrders);
-    }
-
-    public void stop() {
-        this.running = false;
-        logger.debug("CustomerMocker now stopped");
-    }
-
-*/
+    */
     public static List<PlaceOrderCommand> mockCustomerOrders(final int desiredNumberOfOrders) {
 
         return Stream.generate(() -> {
@@ -94,14 +88,18 @@ public class CustomerMocker {
             if (counter == 100) {
                 logger.debug("sending a remake");
                 placeOrderCommand = new PlaceOrderCommand(
-                    OrderSource.WEB,
-                    null,
-                    Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
-                    null,
-                    BigDecimal.valueOf(3.50)
+                        UUID.randomUUID().toString(),
+                        "ATLANTA",
+                        OrderSource.WEB,
+                        null,
+                        Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
+                        null,
+                        BigDecimal.valueOf(3.50)
                 );
-            }else{
+            } else {
                 placeOrderCommand = new PlaceOrderCommand(
+                        UUID.randomUUID().toString(),
+                        "ATLANTA",
                         OrderSource.WEB,
                         null,
                         Arrays.asList(new OrderLineItem(Item.CAPPUCCINO, BigDecimal.valueOf(3.50), "Lemmy")),
@@ -112,10 +110,10 @@ public class CustomerMocker {
                 if (desiredNumberOfOrders % 2 == 0) {
                     placeOrderCommand.getKitchenItems().get().addAll(createKitchenItems());
                 }
-                if(placeOrderCommand.getBaristaItems().isPresent()){
+                if (placeOrderCommand.getBaristaItems().isPresent()) {
                     counter += placeOrderCommand.getBaristaItems().get().size();
                 }
-                if(placeOrderCommand.getKitchenItems().isPresent()){
+                if (placeOrderCommand.getKitchenItems().isPresent()) {
                     counter += placeOrderCommand.getKitchenItems().get().size();
                 }
                 logger.debug("current order count: {}", counter);
@@ -129,7 +127,7 @@ public class CustomerMocker {
 
         List<OrderLineItem> beverages = new ArrayList(2);
         beverages.add(new OrderLineItem(randomBaristaItem(), BigDecimal.valueOf(4.0), randomCustomerName()));
-        beverages.add(new OrderLineItem(randomBaristaItem(), BigDecimal.valueOf(3.5),randomCustomerName()));
+        beverages.add(new OrderLineItem(randomBaristaItem(), BigDecimal.valueOf(3.5), randomCustomerName()));
         return beverages;
     }
 

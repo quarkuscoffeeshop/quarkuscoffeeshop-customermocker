@@ -1,8 +1,6 @@
 package io.quarkuscoffeeshop.customermocker.domain;
 
-import io.quarkuscoffeeshop.domain.OrderPlacedEvent;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkuscoffeeshop.domain.PlaceOrderCommand;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;

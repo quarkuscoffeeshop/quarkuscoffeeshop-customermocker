@@ -3,7 +3,7 @@ package io.quarkuscoffeeshop.customermocker.infrastructure;
 import com.google.common.base.Joiner;
 import io.quarkuscoffeeshop.customermocker.domain.CustomerMocker;
 import io.quarkuscoffeeshop.customermocker.domain.CustomerVolume;
-import io.quarkuscoffeeshop.domain.*;
+import io.quarkuscoffeeshop.customermocker.domain.PlaceOrderCommand;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
